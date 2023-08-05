@@ -6,11 +6,16 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 #############################################################################
 
-from query_boolean import union_query, intersect_query
+from query_boolean import union_query, intersect_query, parse_query
 
 LIST1_IDX = 0
 LIST2_IDX = 1
 EXPECTED_IDX = 2
+
+PARSE_QUERY_IDX = 0
+PARSE_TERMS_IDX = 1
+PARSE_OPS_IDX = 2
+PARSE_MSG_IDX = 3
 
 TEST_UNION = "union"
 TEST_INTERSECT = "intersect"
@@ -35,12 +40,66 @@ INTERSECT_TEST_CASES = [
 ]
 
 PARSE_TEST_CASES = [
-    ["Workbooks", ["Workbooks"], [], "OK"],
-    ["Australasia OR Airbase", ["Australasia", "Airbase"], ["OR"], "OK"],
-    ["AND anu", ["Australasia", "Airbase"], ["OR"], "OK"],
-    
-    
+    ["Workbooks", ["workbooks"], [], "OK"],
+    ["Australasia OR Airbase", ["australasia", "airbase"], ["OR"], "OK"],
+    ["SCIENCE OR technology AND advancement AND PLATFORM", ["science", "technology", "advancement", "platform"], ["OR", "AND", "AND"], "OK"],
+    ["AND anu", [], [], "INVALID: Operation cannot be at the start of a query"],
+    ["anu australia AND global", [], [], "INVALID: 2 terms cannot appear next to each other: anu australia"],
+    ["computer AND science AND anu AND OR australia", [], [], "INVALID: 2 operations cannot appear next to each other: AND OR"],
+    ["AND OR OR", [], [], "INVALID: Operation cannot be at the start of a query"],
+    ["australia commonwealth canberra", [], [], "INVALID: 2 terms cannot appear next to each other: australia commonwealth"]
 ]
+
+def test_parse(idx):
+    test_case = PARSE_TEST_CASES[idx]
+    
+    query = test_case[PARSE_QUERY_IDX]
+    expected_terms = test_case[PARSE_TERMS_IDX]
+    expected_ops =  test_case[PARSE_OPS_IDX]
+    expected_msg = test_case[PARSE_MSG_IDX]
+    
+    terms = []
+    ops = []
+    msg = ""
+    (terms, ops, msg) = parse_query(query)
+    
+    if(msg == expected_msg):
+        if(msg == "OK"):
+            # Compare terms[]
+            if(len(expected_terms) != len(terms)):
+                print("[TC {id}] FAILURE: Diffrence in length of terms[]".format(id=idx))
+                print("Expected:", len(expected_terms), expected_terms)
+                print("Actual  :", len(terms), terms, "\n")
+                return False
+            
+            for i in range(0, len(terms)):
+                if(terms[i] != expected_terms[i]):
+                    print("[TC{id}] FAILURE: Difference in data of terms[]".format(id=idx))
+                    print("Expected:", expected_terms)
+                    print("Actual  :", terms, "\n")
+                    return False
+                
+            # Compare ops[]
+            if(len(expected_ops) != len(ops)):
+                print("[TC {id}] FAILURE: Diffrence in length of ops[]".format(id=idx))
+                print("Expected:", len(expected_ops), expected_ops)
+                print("Actual  :", len(ops), ops, "\n")
+                return False
+            
+            for i in range(0, len(ops)):
+                if(ops[i] != expected_ops[i]):
+                    print("[TC{id}] FAILURE: Difference in data of ops[]".format(id=idx))
+                    print("Expected:", expected_ops)
+                    print("Actual  :", ops, "\n")
+                    return False
+    else:
+        print("[TC{id}] FAILURE: Difference in returned message".format(id=idx))
+        print("Expected:", expected_msg)
+        print("Actual  :", msg, "\n")
+        return False
+    
+    print("[TC {id}] SUCCESS\n".format(id=idx))
+    return True
 
 def test_query(type, idx):
     test_case = None
@@ -61,14 +120,14 @@ def test_query(type, idx):
     res.sort()
     
     if(len(res) != len(expected)):
-        print("[TC {id}] FAILURE: Diffrence in length".format(id=test_case_idx))
+        print("[TC {id}] FAILURE: Diffrence in length".format(id=idx))
         print("Expected:", len(expected), expected)
         print("Actual  :", len(res), res, "\n")
         return False
     
     for i in range(0, len(res)):
         if(res[i] != expected[i]):
-            print("[TC{id}] FAILURE: Difference in data".format(id=test_case_idx))
+            print("[TC{id}] FAILURE: Difference in data".format(id=idx))
             print("Expected:", expected)
             print("Actual  :", res, "\n")
             return False
@@ -104,4 +163,13 @@ if __name__ == '__main__':
     ################################################################################
     
     #############################   TEST PARSE QUERY   #############################
+    parse_success_cnt = 0
+    print("\n")
+    for i in range(0, len(PARSE_TEST_CASES)):
+        if(True == test_parse(i)): parse_success_cnt += 1
+    print("-----------------")
+    if(len(PARSE_TEST_CASES) == parse_success_cnt):
+        print("[PARSE PASSED]")
+    else:
+        raise Exception("[PARSE FAILED]")
     ################################################################################

@@ -74,6 +74,17 @@ def union_query(doc_list1, doc_list2):
     return res
 
 def get_doc_list(term, posting_list, index):
+    """Get posting list of term
+
+    Args:
+        query_string (str) : boolean query string
+        posting_list (dict): Posting list of terms appear in the query
+        index (dict)       : Posting lists for all terms appear in the gov data
+
+    Returns:
+        None
+    """
+    
     occurences = []
         
     if term not in index:
@@ -93,7 +104,7 @@ def parse_query(query_string):
         query_string (str): boolean query string
 
     Returns:
-        tupple(terms: list(int), operations: list(int), message: str): a list of doc_ids which are relevant to the query
+        tupple(terms: list(int), operations: list(int), message: str)
     """
     
     terms = []
@@ -102,7 +113,7 @@ def parse_query(query_string):
     query_string = query_string.split()
     
     if(query_string[0] in operation_map):
-        return (terms, ops, "INVALID: Operation cannot be at the start of a quary")
+        return (terms, ops, "INVALID: Operation cannot be at the start of a query")
     
     previous_item = ""
     for item in query_string:
@@ -198,13 +209,6 @@ if __name__ == '__main__':
         "Global AND SPACE AND economies",
         "SCIENCE OR technology AND advancement AND PLATFORM",
         "Wireless OR Communication AND channels OR SENSORY AND INTELLIGENCE",
-        
-        # # Add more queries to test invalid cases
-        # "AND anu",
-        # "anu australia AND global",
-        # "computer AND science AND anu AND OR australia",
-        # "AND OR OR",
-        # "australia commonwealth canberra"
     ]
 
     # run each of the queries and print the result
