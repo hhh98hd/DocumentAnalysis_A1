@@ -10,6 +10,17 @@ from query import (
     query_main,
 )
 
+def calc_idf(df, num_docs):
+    """Calculate IDF of a particular term
+
+    Args:
+        df (int)       : Document frequency of a term
+        num_docs (int) : Number of documents in the collection
+
+    Returns:
+        float: Calculated IDF
+    """
+    return 0 if df == num_docs else math.log(num_docs / (1 + df), math.e)
 
 def get_doc_to_norm(index, doc_freq, num_docs):
     """Pre-compute the norms for each document vector in the corpus using tfidf.
@@ -23,11 +34,18 @@ def get_doc_to_norm(index, doc_freq, num_docs):
         dict(int: float): a dictionary mapping doc_ids to document norms
     """
 
-    # TODO: Implement this function using tfidf
-    # Hint: This function is similar to the get_doc_to_norm function in query.py
-    #       but should use tfidf instead of term frequency
+    doc_norms = defaultdict(float)
+    
+    for term in index:
+        idf = calc_idf(doc_freq[term], num_docs)
 
-    return doc_norm
+        for (doc_id, tf) in index[term]:
+            doc_norms[doc_id] += (tf*idf)**2
+            
+    for doc_id in doc_norms:
+        doc_norms[doc_id] = math.sqrt(doc_norms[doc_id])
+
+    return doc_norms
 
 
 def run_query(query_string, index, doc_freq, doc_norm, num_docs):
@@ -50,11 +68,23 @@ def run_query(query_string, index, doc_freq, doc_norm, num_docs):
     # TODO: Implement this function using tfidf
     # Hint: This function is similar to the run_query function in query.py
     #       but should use tfidf instead of term frequency
+    sorted_docs = []
 
     return sorted_docs
 
 
 if __name__ == '__main__':
+    # query = "How to stay safe during severe weather?"
+    # query = query.split()
+    # new_query = []
+    # stopwords = set(nltk.corpus.stopwords.words("english"))
+    # for term in query:
+    #     if(term in stopwords or term.lower() in stopwords):
+    #         continue
+    #     else:
+    #         new_query.append(term)
+    # print(new_query)
+        
     queries = [
         'Is nuclear power plant eco-friendly?',
         'How to stay safe during severe weather?',
