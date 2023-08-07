@@ -33,8 +33,6 @@ def test_idf(idx):
         print("ACtual  :", idf)
         return False
     
-def test_get_docs_to_norms(idx):
-    pass
 
 if __name__ == '__main__':
     ####### TEST IDF CALCULATION #######
@@ -91,4 +89,3 @@ if __name__ == '__main__':
         raise Exception("[NORMS FAILED]\n")
     print("-----------------")
      
-

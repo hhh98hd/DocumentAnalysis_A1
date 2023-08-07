@@ -18,7 +18,7 @@ def calc_idf(df, num_docs):
         num_docs (int) : Number of documents in the collection
 
     Returns:
-        float: Calculated IDF
+        float: Calculated IDF  = ln(M / 1 + DF)
     """
     return 0 if df == num_docs else math.log(num_docs / (1 + df), math.e)
 
@@ -65,26 +65,45 @@ def run_query(query_string, index, doc_freq, doc_norm, num_docs):
         sorted so that the most similar documents to the query are at the top.
     """
 
-    # TODO: Implement this function using tfidf
-    # Hint: This function is similar to the run_query function in query.py
-    #       but should use tfidf instead of term frequency
     sorted_docs = []
-
+    
+    # preprocess the query string
+    qt = get_query_tokens(query_string)
+    
+    # calculate norm of the query
+    query_norm = 0.0
+    query_token_counts = count_query_tokens(qt)
+      
+    for(term, tf) in query_token_counts:
+        if term not in index:
+            continue
+        else:
+            idf = calc_idf(doc_freq[term], num_docs)
+            query_norm += (tf * idf)**2
+    
+    query_norm = math.sqrt(query_norm)
+    
+    # calculate consine similarity
+    doc_to_score = defaultdict(float)
+    
+    for (term, tf_query) in query_token_counts:
+        if term not in index:
+            continue
+        else:
+            for (doc_id, tf_doc) in index[term]:
+                idf = calc_idf(doc_freq[term], num_docs)
+                
+                tfidf_query = tf_query * idf
+                tfidf_doc = tf_doc * idf
+                
+                doc_to_score[doc_id] += ((tfidf_query * tfidf_doc) / (doc_norm[doc_id] * query_norm))
+    
+    sorted_docs = sorted(doc_to_score.items(), key=lambda x:-x[1])
+        
     return sorted_docs
 
 
 if __name__ == '__main__':
-    # query = "How to stay safe during severe weather?"
-    # query = query.split()
-    # new_query = []
-    # stopwords = set(nltk.corpus.stopwords.words("english"))
-    # for term in query:
-    #     if(term in stopwords or term.lower() in stopwords):
-    #         continue
-    #     else:
-    #         new_query.append(term)
-    # print(new_query)
-        
     queries = [
         'Is nuclear power plant eco-friendly?',
         'How to stay safe during severe weather?',
