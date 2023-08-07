@@ -109,4 +109,3 @@ if __name__ == '__main__':
         'How to stay safe during severe weather?',
     ]
     query_main(queries=queries, query_func=run_query, doc_norm_func=get_doc_to_norm)
-    
