@@ -1,6 +1,6 @@
 import pickle
 from string_processing import (
-    process_tokens,
+    run_normalization,
     tokenize_text,
 )
 import os

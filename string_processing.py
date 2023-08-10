@@ -1,21 +1,77 @@
 import nltk
-from nltk.stem import PorterStemmer
+from nltk.stem import PorterStemmer, SnowballStemmer, WordNetLemmatizer
 from nltk.tokenize import sent_tokenize, word_tokenize
+import re
+
+punctuation_marks = [".", "?", "!", ",", ";",
+                     ":","\"", "'", "(", ")",
+                     "[", "]", "{", "}", "'s",
+                     "_", ";"]
+
+patterns = [
+    r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b',                        # Email                         
+    r'\b(?:https?://)?(?:www\.)?[A-Za-z0-9.-]+(?:\.[A-Z|a-z]{2,7})+\S*\b'           # Website
+]
 
 def process_tokens(toks):
-    # TODO: fill in the functions: process_tokens_1, 
-    # process_tokens_2, process_tokens_3 functions and
-    # uncomment the one you want to test below 
-    # make sure to rebuild the index
-
-    #return process_tokens_1(toks)
-    #return process_tokens_2(toks)
-    #return process_tokens_3(toks)
-    return process_tokens_original(toks)
-
+    # return process_tokens_1(toks)                                                 # PorterStemmer only
+    # return process_tokens_2(toks)                                                 # Filter before running PorterStemmer
+    return process_tokens_3(toks)                                                   # Filter before running SnowballStemmer
+    # return process_tokens_original(toks)
 
 # get the nltk stopwords list
 stopwords = set(nltk.corpus.stopwords.words("english"))
+
+def run_normalization(toks, stemmer):
+    """ Perform processing on tokens. Before stemming and lemmanization apllied, 
+        \nstopwords and punctuation marks will be removed. Apart from that, email
+        \nand and websites will be taken from its containning token
+
+    Args:
+        toks (list(str)): all the tokens in a single document
+        stemmer         : stemmer used (default not used)
+
+    Returns:
+        list(str): tokens after processing
+    """
+    
+    processed_toks = []
+    
+    for tok in toks:
+        # Remove all non-ASCII characters
+        tok = str(tok).encode("ascii", "ignore").decode()
+        if(tok == ""):
+            continue
+        
+        # Convert to lower-case
+        tok = tok.lower()
+        
+        if tok in stopwords:
+            continue
+        else:
+            # Skip stemming for emails, websites
+            for pattern in patterns:
+                matches = re.findall(pattern, tok)
+                if len(matches) != 0:
+                    # Filter email, website from the token
+                    for item in matches:
+                        processed_toks.append(item)
+                    continue
+            
+            # Remove punctuation mark in token
+            for ch in tok:
+                if ch in punctuation_marks:
+                    tok =  tok.replace(ch, "")   
+            if(tok == ""):
+                continue
+                
+            # Stem
+            if stemmer != None:
+                tok = stemmer.stem(tok)
+            
+            processed_toks.append(tok)
+    
+    return processed_toks
 
 def process_tokens_original(toks):
     """ Perform processing on tokens. This is the Linguistics Modules
@@ -37,7 +93,6 @@ def process_tokens_original(toks):
         new_toks.append(t)
     return new_toks
 
-
 def process_tokens_1(toks):
     """ Perform processing on tokens. This is the Linguistics Modules
     phase of index construction
@@ -48,19 +103,25 @@ def process_tokens_1(toks):
     Returns:
         list(str): tokens after processing
     """
-    new_toks = []
-    for t in toks:
-        # ignore stopwords
-        if t in stopwords or t.lower() in stopwords:
+    
+    processed_toks = []
+    stemmer = PorterStemmer()
+    
+    for tok in toks:
+        # Remove all non-ASCII characters
+        tok = str(tok).encode("ascii", "ignore").decode()
+        if(tok == ""):
             continue
-        # lowercase token
-        t = t.lower()
-
-        #TODO: your code should modify t and/or do some sort of filtering
-
-        new_toks.append(t)
-    return new_toks
-
+        
+        tok = tok.lower()
+        if tok in stopwords:
+            continue
+        else:
+            tok = stemmer.stem(tok)
+            
+        processed_toks.append(tok)
+    
+    return processed_toks
 
 def process_tokens_2(toks):
     """ Perform processing on tokens. This is the Linguistics Modules
@@ -72,20 +133,10 @@ def process_tokens_2(toks):
     Returns:
         list(str): tokens after processing
     """
-    new_toks = []
-    for t in toks:
-        # ignore stopwords
-        if t in stopwords or t.lower() in stopwords:
-            continue
-        # lowercase token
-        t = t.lower()
-
-        #TODO: your code should modify t and/or do some sort of filtering
-
-        new_toks.append(t)
-    return new_toks
-
-
+    
+    stemmer = PorterStemmer()
+    return run_normalization(toks, stemmer=stemmer, lemma=None)
+    
 def process_tokens_3(toks):
     """ Perform processing on tokens. This is the Linguistics Modules
     phase of index construction
@@ -96,19 +147,9 @@ def process_tokens_3(toks):
     Returns:
         list(str): tokens after processing
     """
-    new_toks = []
-    for t in toks:
-        # ignore stopwords
-        if t in stopwords or t.lower() in stopwords:
-            continue
-        # lowercase token
-        t = t.lower()
-
-        #TODO: your code should modify t and/or do some sort of filtering
-
-        new_toks.append(t)
-    return new_toks
-
+    
+    stemmer = SnowballStemmer(language='english')
+    return run_normalization(toks, stemmer=stemmer, lemma=None)
 
 def tokenize_text(data):
     """Convert a document as a string into a document as a list of
@@ -123,4 +164,3 @@ def tokenize_text(data):
     # split text on spaces
     tokens = data.split()
     return tokens
-

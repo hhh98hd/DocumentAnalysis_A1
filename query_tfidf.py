@@ -1,7 +1,7 @@
 import math
 from collections import defaultdict
 from string_processing import (
-    process_tokens,
+    run_normalization,
     tokenize_text,
 )
 from query import (

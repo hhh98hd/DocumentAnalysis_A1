@@ -120,11 +120,4 @@ if __name__ == '__main__':
     # store the index to disk
     pickle.dump((index, doc_freq, doc_ids, num_docs), open("stored_index.pkl", "wb"))
     print("Done\n")
-            
-    print("COMPLETED!")
-    
-    # for term in index:
-    #     # term = str(term).encode("ascii", "ignore").decode()
-    #     print(term)
-        
     
