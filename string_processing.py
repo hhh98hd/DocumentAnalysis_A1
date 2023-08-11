@@ -1,6 +1,5 @@
 import nltk
-from nltk.stem import PorterStemmer, SnowballStemmer, WordNetLemmatizer
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem import PorterStemmer, SnowballStemmer, LancasterStemmer
 import re
 
 punctuation_marks = [".", "?", "!", ",", ";",
@@ -16,7 +15,9 @@ patterns = [
 def process_tokens(toks):
     # return process_tokens_1(toks)                                                 # PorterStemmer only
     # return process_tokens_2(toks)                                                 # Filter before running PorterStemmer
-    return process_tokens_3(toks)                                                   # Filter before running SnowballStemmer
+    return process_tokens_3(toks)                                                 # Filter before running SnowballStemmer
+    # return process_tokens_4(toks)                                                 # Filter before running LancasterStemmer
+    # return process_tokens_5(toks)                                                   # Filter only
     # return process_tokens_original(toks)
 
 # get the nltk stopwords list
@@ -135,7 +136,7 @@ def process_tokens_2(toks):
     """
     
     stemmer = PorterStemmer()
-    return run_normalization(toks, stemmer=stemmer, lemma=None)
+    return run_normalization(toks, stemmer=stemmer)
     
 def process_tokens_3(toks):
     """ Perform processing on tokens. This is the Linguistics Modules
@@ -149,7 +150,34 @@ def process_tokens_3(toks):
     """
     
     stemmer = SnowballStemmer(language='english')
-    return run_normalization(toks, stemmer=stemmer, lemma=None)
+    return run_normalization(toks, stemmer=stemmer)
+
+def process_tokens_4(toks):
+    """ Perform processing on tokens. This is the Linguistics Modules
+    phase of index construction
+
+    Args:
+        toks (list(str)): all the tokens in a single document
+
+    Returns:
+        list(str): tokens after processing
+    """
+    
+    stemmer = LancasterStemmer()
+    return run_normalization(toks, stemmer=stemmer)
+
+def process_tokens_5(toks):
+    """ Perform processing on tokens. This is the Linguistics Modules
+    phase of index construction
+
+    Args:
+        toks (list(str)): all the tokens in a single document
+
+    Returns:
+        list(str): tokens after processing
+    """
+    
+    return run_normalization(toks, None)
 
 def tokenize_text(data):
     """Convert a document as a string into a document as a list of
